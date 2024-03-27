@@ -12,7 +12,7 @@ import catchAsync from "../../Utilities/catchAsync";
 const getAllAdmin = catchAsync(async (req: Request, res: Response) => {
   const filterData = pick(req.query, adminFilterableFields);
   const optionsData = pick(req.query, optionsPaginationFields);
-  console.log(filterData);
+
   const result = await adminService.getAllAdminFromDB(filterData, optionsData);
   sendResponse(res, {
     statusCode: httpStatus.OK,
