@@ -38,5 +38,10 @@ router.post(
     return userController.createdPatient(req, res, next);
   }
 );
+router.patch(
+  "/:id/status",
+  auth(UserRole.SUPPER_ADMIN, UserRole.ADMIN),
+  userController.changeProfileStatus
+);
 
 export const userRoutes = router;

@@ -4,6 +4,7 @@ import {
   Prisma,
   PrismaClient,
   UserRole,
+  UserStatus,
 } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 import { fileUploader } from "../../Helpers/fileUploader";
@@ -12,6 +13,8 @@ import { Request } from "express";
 import { IPaginationOptions } from "../../Interface/interface";
 import paginationCalculation from "../../Helpers/paginationHelpers";
 import { userSearchingField } from "./userConstant";
+import ApiError from "../../App/Error/ApiError";
+import httpStatus from "http-status";
 
 const prisma = new PrismaClient();
 
@@ -143,6 +146,15 @@ const getAllUserFromDB = async (params: any, options: IPaginationOptions) => {
         : {
             createdAt: "asc",
           },
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      needPasswordChange: true,
+      status: true,
+      createdAt: true,
+      updateAt: true,
+    },
   });
   const total = await prisma.user.count({
     where: whereCondition,
@@ -157,9 +169,38 @@ const getAllUserFromDB = async (params: any, options: IPaginationOptions) => {
   };
 };
 
+const changeProfileStatus = async (id: string, status: UserStatus) => {
+  const userData = await prisma.user.findUniqueOrThrow({
+    where: {
+      id: id,
+    },
+  });
+
+  if (!userData) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found !");
+  }
+  const updatedStatus = await prisma.user.update({
+    where: {
+      id,
+    },
+    data: status,
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      status: true,
+      needPasswordChange: true,
+      createdAt: true,
+      updateAt: true,
+    },
+  });
+  return updatedStatus;
+};
+
 export const userService = {
   createdAdmin,
   createdDoctor,
   createdPatient,
   getAllUserFromDB,
+  changeProfileStatus,
 };
