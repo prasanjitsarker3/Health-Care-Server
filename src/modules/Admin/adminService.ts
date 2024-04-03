@@ -75,6 +75,7 @@ const singleDataFromDB = async (id: string): Promise<Admin | null> => {
   return result;
 };
 
+
 const updateAdminDataIntoDB = async (id: string, params: Partial<Admin>) => {
   await prisma.admin.findUniqueOrThrow({
     where: {

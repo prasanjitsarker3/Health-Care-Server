@@ -9,6 +9,17 @@ const router = express.Router();
 
 router.get("/all-user", userController.getAllUser);
 
+router.get(
+  "/me",
+  auth(
+    UserRole.ADMIN,
+    UserRole.SUPPER_ADMIN,
+    UserRole.DOCTOR,
+    UserRole.PATIENT
+  ),
+  userController.getMyProfile
+);
+
 router.post(
   "/create-admin",
   auth(UserRole.ADMIN, UserRole.SUPPER_ADMIN),
@@ -42,6 +53,21 @@ router.patch(
   "/:id/status",
   auth(UserRole.SUPPER_ADMIN, UserRole.ADMIN),
   userController.changeProfileStatus
+);
+
+router.patch(
+  "/profile_update",
+  auth(
+    UserRole.ADMIN,
+    UserRole.SUPPER_ADMIN,
+    UserRole.DOCTOR,
+    UserRole.PATIENT
+  ),
+  fileUploader.upload.single("file"),
+  (req: Request, res: Response, next: NextFunction) => {
+    req.body = userValidation.profileUpdate.parse(JSON.parse(req.body.data));
+    return userController.updateMyProfile(req, res, next);
+  }
 );
 
 export const userRoutes = router;

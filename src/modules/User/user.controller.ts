@@ -6,6 +6,7 @@ import catchAsync from "../../Utilities/catchAsync";
 import pick from "../../Shared/Pick";
 import { optionsPaginationFields } from "../Admin/adminConstant";
 import { userFilterableFields } from "./userConstant";
+import { IUser } from "./userInterface";
 
 const createdAdmin = catchAsync(async (req: Request, res: Response) => {
   const result = await userService.createdAdmin(req);
@@ -60,10 +61,38 @@ const changeProfileStatus = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getMyProfile = catchAsync(
+  async (req: Request & { user?: IUser }, res: Response) => {
+    const user = req.user;
+    const result = await userService.getMyProfile(user as IUser);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "User profile data fetched !",
+      data: result,
+    });
+  }
+);
+
+const updateMyProfile = catchAsync(
+  async (req: Request & { user?: IUser }, res: Response) => {
+    const user = req.user;
+    const result = await userService.updateMyProfile(user as IUser, req);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Profile Data Updated Successfully !",
+      data: result,
+    });
+  }
+);
+
 export const userController = {
   createdAdmin,
   createdDoctor,
   createdPatient,
   getAllUser,
   changeProfileStatus,
+  getMyProfile,
+  updateMyProfile,
 };
