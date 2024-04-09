@@ -1,3 +1,4 @@
+import { IScheduleFilter, scheduleFilterableFields } from "./scheduleContants";
 import { addHours, addMinutes, format } from "date-fns";
 import prisma from "../../Shared/prisma";
 import { Prisma, Schedule } from "@prisma/client";
@@ -59,14 +60,13 @@ const insertScheduleIntoDB = async (
 };
 
 const getScheduleFromDB = async (
-  params: any,
+  params: IScheduleFilter,
   options: IPaginationOptions,
   user: IUser
 ) => {
   const { page, limit, skip, sortBy, sortOrder } =
     paginationCalculation(options);
   const { startDate, endDate, ...filterData } = params;
-  console.log(startDate, endDate);
   const andCondition: Prisma.ScheduleWhereInput[] = [];
 
   if (startDate && endDate) {
@@ -103,11 +103,18 @@ const getScheduleFromDB = async (
       },
     },
   });
-  console.log(doctorSchedules);
+  const doctorScheduleIds = doctorSchedules.map(
+    (schedule) => schedule.scheduleId
+  );
 
   const whereCondition: Prisma.ScheduleWhereInput = { AND: andCondition };
   const result = await prisma.schedule.findMany({
-    where: whereCondition,
+    where: {
+      ...whereCondition,
+      id: {
+        notIn: doctorScheduleIds,
+      },
+    },
     skip,
     take: limit,
     orderBy:
@@ -120,7 +127,12 @@ const getScheduleFromDB = async (
           },
   });
   const total = await prisma.schedule.count({
-    where: whereCondition,
+    where: {
+      ...whereCondition,
+      id: {
+        notIn: doctorScheduleIds,
+      },
+    },
   });
   return {
     meta: {
@@ -132,7 +144,27 @@ const getScheduleFromDB = async (
   };
 };
 
+const getSingleSchedule = async (id: string) => {
+  const result = await prisma.schedule.findUniqueOrThrow({
+    where: {
+      id,
+    },
+  });
+  return result;
+};
+
+const deleteScheduleFromDB = async (id: string) => {
+  const result = await prisma.schedule.delete({
+    where: {
+      id,
+    },
+  });
+  return result;
+};
+
 export const scheduleService = {
   insertScheduleIntoDB,
   getScheduleFromDB,
+  getSingleSchedule,
+  deleteScheduleFromDB,
 };
