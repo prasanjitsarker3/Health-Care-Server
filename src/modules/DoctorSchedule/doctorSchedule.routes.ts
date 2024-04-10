@@ -12,7 +12,12 @@ router.get(
 );
 router.get(
   "",
-  auth(UserRole.DOCTOR, UserRole.SUPPER_ADMIN, UserRole.ADMIN),
+  auth(
+    UserRole.DOCTOR,
+    UserRole.SUPPER_ADMIN,
+    UserRole.ADMIN,
+    UserRole.PATIENT
+  ),
   doctorScheduleController.getAllScheduleFromDB
 );
 
@@ -23,7 +28,7 @@ router.post(
 );
 router.delete(
   "/:id",
-  auth(UserRole.DOCTOR),
+  auth(UserRole.DOCTOR, UserRole.ADMIN, UserRole.SUPPER_ADMIN),
   doctorScheduleController.deleteFromDB
 );
 

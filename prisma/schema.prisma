@@ -67,6 +67,9 @@ model Doctor {
   user User @relation(fields: [email], references: [email])
   doctorSpecialties DoctorSpecialties []
   doctorSchedules DoctorSchedules []
+  appointment Appointment[]
+  prescription Prescription[]
+  review Review[]
 
   @@map("doctors")
   
@@ -85,6 +88,9 @@ model Patient {
   user User @relation(fields: [email], references: [email])
   patientHealthData PatientHealthData ? 
   medicalReport MedicalReport[]
+  appointment Appointment[]
+  prescription Prescription[]
+  review Review[]
  
  @@map("patients")
 }
@@ -153,7 +159,7 @@ model Schedule {
   createdAt DateTime @default(now()) 
   upadateAt DateTime @updatedAt
   doctorSchedules DoctorSchedules []
-  
+  appointment Appointment?
   @@map("schedules")  
 }
 
@@ -163,10 +169,80 @@ model DoctorSchedules {
   scheduleId String
   schedule Schedule @relation(fields: [scheduleId], references: [id])
   isBooked Boolean @default(false)
-  appointmentId String?
+  appointmentId String? @unique
+  appointment Appointment? @relation(fields: [appointmentId], references: [id])
 
   @@id([doctorId,scheduleId])
   @@map("doctor_schedules")
+}
+
+model Appointment {
+  id String @id @default(uuid())
+  patientId String
+  patient Patient @relation(fields: [patientId], references: [id])
+  doctorId String
+  doctor Doctor @relation(fields: [doctorId], references: [id])
+  scheduleId String @unique
+  schedule Schedule @relation(fields: [scheduleId], references: [id])
+  videoCallingId String
+  status AppointmentStatus @default(SCHEDULED)
+  paymentStatus PaymentStatus @default(UNPAID)
+  createdAt DateTime @default(now()) 
+  upadateAt DateTime @updatedAt
+
+  dcotorSchdeudles DoctorSchedules?
+  payment Payment?
+  prescription Prescription?
+  review Review?
+
+  @@map("appointments")
+
+}
+
+model Payment {
+  id String @id @default(uuid())
+  appointmentId String @unique
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
+  amount Float
+  transactionId String
+  status PaymentStatus @default(UNPAID)
+  paymentGatewayData Json?
+  createdAt DateTime @default(now()) 
+  upadateAt DateTime @updatedAt
+
+  @@map("payments")
+}
+
+model Prescription {
+  id String @id @default(uuid())
+  appointmentId String @unique
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
+  doctorId String
+  doctor Doctor @relation(fields: [doctorId], references: [id])
+  patientId String
+  patient Patient @relation(fields: [patientId], references: [id])
+  instructions String
+  followUpDate DateTime?
+  createdAt DateTime @default(now()) 
+  upadateAt DateTime @updatedAt
+
+  @@map("prescriptions")
+}
+
+model Review {
+  id String @id @default(uuid())
+  patientId String
+  patient Patient @relation(fields: [patientId], references: [id])
+  doctorId String
+  doctor Doctor @relation(fields: [doctorId], references: [id])
+  appointmentId String @unique
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
+  rating Float
+  comment String
+  createdAt DateTime @default(now()) 
+  upadateAt DateTime @updatedAt
+
+  @@map("reviews")
 }
 
 enum UserRole {
@@ -204,5 +280,17 @@ enum BloodGroup {
 
 enum MaritalStatus {
    MARRIED
- UNMARRIED
+   UNMARRIED
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  INPROGRESS
+  COMPLETED
+  CANCELED
+}
+
+enum PaymentStatus {
+   PAID
+   UNPAID
 }
