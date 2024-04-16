@@ -40,8 +40,25 @@ const getMyAppointment = catchAsync(
     });
   }
 );
+const getAllAppointment = catchAsync(
+  async (req: Request & { user?: IUser }, res: Response) => {
+    const filterData = pick(req.query, ["status", "paymentStatus"]);
+    const optionsData = pick(req.query, optionsPaginationFields);
+    const result = await appointmentService.getAllAppointmentFromDB(
+      filterData,
+      optionsData
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.CREATED,
+      success: true,
+      message: "Appointment Fetch  Successfully !",
+      data: result,
+    });
+  }
+);
 
 export const appointmentController = {
   createAppointment,
   getMyAppointment,
+  getAllAppointment,
 };

@@ -12,6 +12,11 @@ router.get(
 );
 
 // get all appointment route pending
+router.get(
+  "",
+  auth(UserRole.SUPPER_ADMIN, UserRole.ADMIN),
+  appointmentController.getAllAppointment
+);
 
 router.post(
   "/create",
