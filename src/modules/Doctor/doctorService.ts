@@ -62,7 +62,7 @@ const getAllDoctorFromDB = async (params: any, options: IPaginationOptions) => {
             [sortBy]: sortOrder,
           }
         : {
-            createdAt: "desc",
+            averageRating: "desc",
           },
     include: {
       doctorSpecialties: {
