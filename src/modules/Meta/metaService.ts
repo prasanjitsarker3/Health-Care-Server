@@ -40,6 +40,8 @@ const superAdminData = async () => {
       status: PaymentStatus.PAID,
     },
   });
+  const barChartData = await getBarChartData();
+  const pieChartData = await getPieChartData();
 
   return {
     appointmentCount,
@@ -48,6 +50,8 @@ const superAdminData = async () => {
     adminCount,
     paymentCount,
     totalRevenue,
+    barChartData,
+    pieChartData,
   };
 };
 
@@ -64,6 +68,8 @@ const getAdminMetaData = async (user: IUser) => {
       status: PaymentStatus.PAID,
     },
   });
+  const barChartData = await getBarChartData();
+  const pieChartData = await getPieChartData();
 
   return {
     appointmentCount,
@@ -71,6 +77,8 @@ const getAdminMetaData = async (user: IUser) => {
     doctorCount,
     paymentCount,
     totalRevenue,
+    barChartData,
+    pieChartData,
   };
 };
 
@@ -179,6 +187,34 @@ const patientData = async (user: IUser) => {
     prescriptionCount,
     reviewCount,
   };
+};
+
+const getBarChartData = async () => {
+  const appointmentCountByMonth: { month: Date; count: bigint }[] =
+    await prisma.$queryRaw`
+   SELECT DATE_TRUNC('month',"createdAt") AS month,
+   CAST(COUNT(*) AS INTEGER) AS COUNT 
+   FROM "appointments"
+   GROUP BY month
+   ORDER BY month ASC
+  `;
+
+  return appointmentCountByMonth;
+};
+
+const getPieChartData = async () => {
+  const appointmentStatusDistribution = await prisma.appointment.groupBy({
+    by: ["status"],
+    _count: {
+      id: true,
+    },
+  });
+  const formattedAppointmentStatusDistribution =
+    appointmentStatusDistribution.map((count) => ({
+      status: count.status,
+      count: Number(count._count.id),
+    }));
+  return formattedAppointmentStatusDistribution;
 };
 
 export const metaService = {
